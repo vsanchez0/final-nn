@@ -20,7 +20,21 @@ def sample_seqs(seqs: List[str], labels: List[bool]) -> Tuple[List[str], List[bo
         sampled_labels: List[bool]
             List of labels for the sampled sequences
     """
-    pass
+    pos = [seq for seq, label in zip(seqs, labels) if label]
+    neg = [seq for seq, label in zip(seqs, labels) if not label]
+
+    max_size = max(len(pos), len(neg))
+
+    if len(pos) < max_size:
+        pos = np.random.choice(pos, size=max_size, replace=True).tolist()
+    else:
+        neg = np.random.choice(neg, size=max_size, replace=True).tolist()
+
+    sampled_seqs = pos + neg
+    sampled_labels = [True] * len(pos) + [False] * len(neg)
+    
+    return list(sampled_seqs), list(sampled_labels)
+
 
 def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
     """
@@ -41,4 +55,13 @@ def one_hot_encode_seqs(seq_arr: List[str]) -> ArrayLike:
                 G -> [0, 0, 0, 1]
             Then, AGA -> [1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0].
     """
-    pass
+    map = {'A': [1, 0, 0, 0],
+            'T': [0, 1, 0, 0],
+            'C': [0, 0, 1, 0],
+            'G': [0, 0, 0, 1]}
+
+    encodings = []
+    for seq in seq_arr:
+        encodings.append(np.array([map[nt] for nt in seq]).flatten())
+
+    return np.array(encodings)
